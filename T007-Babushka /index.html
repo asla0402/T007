@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babushka</title>
+
+    <style>
+        article {
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        section {
+            width: 90vw;
+            margin: 0 auto;
+            display: grid;
+            grid-gab: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        }
+
+    </style>
+
+</head>
+
+<body>
+    <section>
+
+    </section>
+
+    <template>
+        <article>
+            <img src="" alt="">
+            <h1 class="kategori"></h1>
+            <h2 class="navn"></h2>
+            <p class="pris"></p>
+            <p class="kort"></p>
+            <p class="lang"></p>
+            <p class="oprindelse"></p>
+        </article>
+    </template>
+    <script>
+        let container = document.querySelector("section");
+        let temp = document.querySelector("template");
+
+        const link = "https://spreadsheets.google.com/feeds/list/17Dd7DvkPaFamNUdUKlrFgnH6POvBJXac7qyiS6zNRw0/od6/public/values?alt=json";
+
+        async function hentdata() {
+            const respons = await fetch(link);
+            const json = await respons.json();
+            vis(json);
+        }
+
+        function vis(madretter) {
+            madretter.feed.entry.forEach(madret => {
+                const klon = temp.cloneNode(true).content;
+                klon.querySelector("img").src = madret.gsx$billede.$t;
+                klon.querySelector(".kategori").textContent = madret.gsx$kategori.$t;
+                klon.querySelector(".navn").textContent = madret.gsx$navn.$t;
+                klon.querySelector(".pris").textContent = madret.gsx$pris.$t;
+                klon.querySelector(".kort").textContent = madret.gsx$kort.$t;
+                klon.querySelector(".lang").textContent = madret.gsx$lang.$t;
+                klon.querySelector(".oprindelse").textContent = madret.gsx$oprindelse.$t;
+                container.appendChild(klon);
+            })
+        }
+
+        hentdata();
+
+    </script>
+
+</body>
+
+</html>
+<script></script>
