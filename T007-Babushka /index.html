@@ -20,14 +20,61 @@
             grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
         }
 
+        .valgt {
+            color: royalblue;
+        }
+
+        #popop {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, .8);
+            display: none;
+        }
+
+        #popop article {
+            width: 80vw;
+            height: 80vh;
+            margin: 4rem auto;
+            background-color: antiquewhite;
+        }
+
+        #luk {
+            position: fixed;
+            top: 0;
+            right: 1em;
+            background-color: antiquewhite;
+            color: black;
+            border-radius: 5px;
+            padding: .1em;
+            cursor: pointer;
+        }
+
     </style>
 
 </head>
 
 <body>
-    <section>
 
+    <section id="popop">
+        <article>
+            <button id="luk">X</button>
+            <img src="" alt="">
+            <div>
+                <h2></h2>
+                <p> Pris: <span class="pris"></span></p>
+                <p> Oprindelse: <span class="oprindelse"></span></p>
+                <p> Beskrivelse: <span class="lang"></span></p>
+            </div>
+        </article>
     </section>
+
+
+
+
+
 
     <template>
         <article>
@@ -35,42 +82,88 @@
             <h1 class="kategori"></h1>
             <h2 class="navn"></h2>
             <p class="pris"></p>
-            <p class="kort"></p>
-            <p class="lang"></p>
-            <p class="oprindelse"></p>
         </article>
     </template>
+
+    <main>
+        <h1>alle</h1>
+
+        <header>
+            <button class="filter valgt" data-kategori="alle">Oversigt</button>
+            <button class="filter valgt" data-kategori="desserter">Desserter</button>
+            <button class="filter valgt" data-kategori="drikkevarer">Drikkevarer</button>
+            <button class="filter valgt" data-kategori="forretter">Forretter</button>
+            <button class="filter valgt" data-kategori="hovedretter">Hovedretter</button>
+            <button class="filter valgt" data-kategori="sideorders">Sideorders</button>
+        </header>
+        <section id="hovedsektion">
+
+        </section>
+    </main>
     <script>
-        let container = document.querySelector("section");
-        let temp = document.querySelector("template");
+        let madretter;
+        let filter = "alle";
+        document.addEventListener("DOMContentLoaded", hentdata)
+        const popop = document.querySelector("#popop");
+
 
         const link = "https://spreadsheets.google.com/feeds/list/17Dd7DvkPaFamNUdUKlrFgnH6POvBJXac7qyiS6zNRw0/od6/public/values?alt=json";
 
         async function hentdata() {
             const respons = await fetch(link);
-            const json = await respons.json();
-            vis(json);
+            madretter = await respons.json();
+            addEventListenersToButtons();
+            visMadretter();
         }
 
-        function vis(madretter) {
+        function visMadretter() {
+            let container = document.querySelector("#hovedsektion");
+            let temp = document.querySelector("template");
+            container.innerHTML = "";
             madretter.feed.entry.forEach(madret => {
-                const klon = temp.cloneNode(true).content;
-                klon.querySelector("img").src = madret.gsx$billede.$t;
-                klon.querySelector(".kategori").textContent = madret.gsx$kategori.$t;
-                klon.querySelector(".navn").textContent = madret.gsx$navn.$t;
-                klon.querySelector(".pris").textContent = madret.gsx$pris.$t;
-                klon.querySelector(".kort").textContent = madret.gsx$kort.$t;
-                klon.querySelector(".lang").textContent = madret.gsx$lang.$t;
-                klon.querySelector(".oprindelse").textContent = madret.gsx$oprindelse.$t;
-                container.appendChild(klon);
+                if (filter == "alle" || filter == madret.gsx$kategori.$t) {
+                    const klon = temp.cloneNode(true).content;
+                    klon.querySelector("img").src = "imgs/small/" + madret.gsx$billede.$t + "-sm.jpg";
+                    klon.querySelector(".kategori").textContent = madret.gsx$kategori.$t;
+                    klon.querySelector(".navn").textContent = madret.gsx$navn.$t;
+                    klon.querySelector(".pris").textContent = madret.gsx$pris.$t;
+                    klon.querySelector("article").addEventListener("click", () => visDetaljer(madret));
+                    container.appendChild(klon);
+                }
             })
         }
 
-        hentdata();
+        function visDetaljer(madret) {
+            popop.querySelector("img").src = "imgs/small/" + madret.gsx$billede.$t + "-sm.jpg";
+            popop.querySelector("h2").textContent = madret.gsx$navn.$t;
+            popop.querySelector(".pris").textContent = madret.gsx$pris.$t;
+            popop.querySelector(".oprindelse").textContent = madret.gsx$oprindelse.$t;
+            popop.querySelector(".lang").textContent = madret.gsx$lang.$t;
+
+            popop.style.display = "block";
+
+        }
+
+        document.querySelector("#luk").addEventListener("click", () => popop.style.display = "none");
+
+        function addEventListenersToButtons() {
+            document.querySelectorAll(".filter").forEach((btn) => {
+                btn.addEventListener("click", filterBTNs);
+            });
+        }
+
+        function filterBTNs() {
+            filter = this.dataset.kategori;
+            document.querySelector("h1").textContent = this.textContent;
+            document.querySelectorAll(".filter").forEach((btn) => {
+                btn.classList.remove("valgt");
+            })
+            this.classList.add("valgt");
+            visMadretter();
+        }
 
     </script>
 
 </body>
 
 </html>
-<script></script>
